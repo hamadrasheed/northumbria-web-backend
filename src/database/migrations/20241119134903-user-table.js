@@ -8,7 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.BIGINT
       },
-      name: {
+      firstName: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      lastName: {
         type: Sequelize.STRING,
         allowNull: false
       },
@@ -16,10 +20,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true
-      },
-      phone: {
-        type: Sequelize.STRING,
-        allowNull: true
       },
       roleId: {
         type: Sequelize.BIGINT  ,
@@ -34,10 +34,6 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
         allowNull: false
-      },
-      isActive: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
       },
       createdAt: {
         allowNull: false,

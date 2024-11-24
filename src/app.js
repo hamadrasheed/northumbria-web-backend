@@ -6,10 +6,10 @@ const helmet = require('helmet');
 const http = require('http');
 const dotenv = require('dotenv');
 const db = require('./database/db.js');
+const indexRouter = require('./routes/');
 
 dotenv.config({ path: '.env' });
 
-// const indexRouter = require('./routes/index');
 const app = express();
 
 // Check database connection
@@ -30,13 +30,14 @@ app.use(express.urlencoded({ extended: false }));
 
 app.set('port', process.env.PORT || 8500);
 
+app.use('/api', indexRouter);
 
 // error handler
-app.use(function(err, req, res, next) {
-  res.status(err?.status || 500).send({
-    message: err?.message || 'Something went wrong!' 
-  })
-});
+// app.use(function(err, req, res, next) {
+//   res.status(err?.status || 500).send({
+//     message: err?.message || 'Something went wrong!' 
+//   })
+// });
 
 const server = http.createServer(app);
 
