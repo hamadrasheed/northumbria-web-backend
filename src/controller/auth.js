@@ -51,14 +51,6 @@ module.exports = {
 
             const bcryptPassword = await bcrypt.hash(password, 1);
 
-            console.log('object', {
-                email,
-                    firstName,
-                    lastName,
-                    password: bcryptPassword,
-                    roleId: roles.id,
-            });
-
             await db.users.create(
                 {
                     email,
@@ -117,7 +109,8 @@ module.exports = {
         
             const userToken = jwt.sign(
                 {
-                    id: isUserExist.id,
+                    userId: isUserExist.id,
+                    role: isUserExist?.role?.slug
                 },
                 process.env.JWT_SECRET_KEY,
                 {
