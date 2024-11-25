@@ -87,20 +87,32 @@ module.exports = {
         }
     },
 
-    async getOwnerParkingSpace(data, filePath) {
+    async getOwnerParkingSpace(data) {
 
         try {
 
             const {
                 userId,
-                ownerOnly
+                ownerOnly,
+                postcode,
+                isAdmin
             } = data;
             console.log('data',data);
-            const whereClause = {};
+            
+            let whereClause = {};
 
             if (ownerOnly == 'true') {
                 whereClause.ownerId = userId
             }
+
+            if (postcode?.length) {
+                whereClause.postCode = {[Op.like]: `%${postcode}%` }
+            }
+
+            if (isAdmin == 'true') {
+                whereClause = {};
+            }
+
             console.log('whereClause',whereClause);
             const existingSpace = helper.shallowCopy(await db.parkingSpaces.findAll({
                 where: {
@@ -133,6 +145,83 @@ module.exports = {
                     picture: x.pictureUrl,
                     weekdays: x?.availableDays?.map(days => days?.availableDay?.name)?.join(", ")
             }));
+
+        } catch (error) {
+
+            console.log('err', error);
+            throw error;
+        }
+    },
+
+    async getBookedSpots(data) {
+
+        try {
+
+            const {
+                userId,
+                isAdmin
+            } = data;
+
+            let whereClause = {
+                userId: userId
+            };
+
+            if (isAdmin == 'true') {
+                whereClause = {};
+            }
+            
+
+            const bookings = helper.shallowCopy(await db.bookings.findAll(
+                {
+                    where: {
+                        ...whereClause
+                    },
+                    attributes: ['id', 'startTime', 'endTime'],
+                    include: {
+                        as: 'parkingSpace',
+                        model: db.parkingSpaces,
+                        include: {
+                            as: 'availableDays',
+                            model:  db.parkingSpaceAvailableDays,
+                            include: {
+                                as: 'availableDay',
+                                model:  db.availableDays,
+                                attributes: ['name']
+                            },
+                            attributes: ['id']
+                        }
+                    }
+                }
+            ));
+
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+            return bookings.map(x => {
+                
+                const date = new Date(x.endTime);
+                const dayIndex = date.getDay(); // Get the day index (0-6)
+                const dayName = daysOfWeek[dayIndex];
+
+                return {
+                    startTime: x.startTime,
+                    dayName: dayName,
+                    endTime: x.endTime,
+                    id: x.parkingSpace?.id,
+                    ownerId: x.parkingSpace?.ownerId,
+                    title: x.parkingSpace?.title,
+                    address: x.parkingSpace?.address,
+                    postalCode: x.parkingSpace?.postCode,
+                    availability: x.parkingSpace?.availableType,
+                    price: x.parkingSpace?.rate,
+                    description: x.parkingSpace?.description,
+                    description: x.parkingSpace?.description,
+                    description: x.parkingSpace?.description,
+                    description: x.parkingSpace?.description,
+                    picture: x.parkingSpace?.pictureUrl,
+                    weekdays: x?.parkingSpace?.availableDays?.map(days => days?.availableDay?.name)?.join(", ")
+
+                }
+            });
 
         } catch (error) {
 

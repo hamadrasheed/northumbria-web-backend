@@ -22,7 +22,7 @@ const uploader = multer({storage:  multer.diskStorage({
 })});
 
 
-router.post('/', authAndRoleMiddleware('owner'), uploader.single('image'), async (req, res) => {
+router.post('/', authAndRoleMiddleware(['owner', 'admin']), uploader.single('image'), async (req, res) => {
     try {
 
         const filePath = `/uploads/${req.file.filename}`;
@@ -76,11 +76,30 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/owner', authAndRoleMiddleware('owner'), async (req, res) => {
+router.get('/owner', authAndRoleMiddleware(['owner', 'admin']), async (req, res) => {
 
     try {
 
         const result = await parkingSpaceController.getOwnerParkingSpace(req.query);
+
+        res.status(200).send({
+            message: "Succcess.",
+            data: result,
+        });
+
+    } catch (error) {
+        
+        res.status(406).send({
+            message: error?.message
+        })
+    }
+});
+
+router.get('/booked', authAndRoleMiddleware(['driver', 'admin']), async (req, res) => {
+
+    try {
+
+        const result = await parkingSpaceController.getBookedSpots(req.query);
 
         res.status(200).send({
             message: "Succcess.",
